@@ -1,5 +1,10 @@
 var _ = require('underscore');
 var io = require('socket.io')();
+
+io.on('connection', function(socket) {
+    socket.emit('testevent', 'hello world');
+});
+
 var livereload = require('livereload');
 var server = livereload.createServer();
 server.watch(__dirname + '/public');
