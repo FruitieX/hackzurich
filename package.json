@@ -1,0 +1,22 @@
+{
+  "name": "hackzurich",
+  "version": "1.0.0",
+  "description": "hackzurich 2015 project",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/FruitieX/hackzurich.git"
+  },
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/FruitieX/hackzurich/issues"
+  },
+  "homepage": "https://github.com/FruitieX/hackzurich#readme",
+  "dependencies": {
+    "node-telegram-bot": "^0.1.3"
+  }
+}
