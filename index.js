@@ -46,6 +46,12 @@ var drawGameState = function() {
 drawGameState();
 
 var doMove = function(from, direction) {
+    if (from.x < 0 || from.x > width - 1 ||
+        from.y < 0 || from.y > height - 1) {
+        console.log('invalid move!');
+        return;
+    }
+
     var temp = gameState[from.y][from.x];
 
     switch (direction) {
@@ -63,7 +69,7 @@ var doMove = function(from, direction) {
             drawGameState();
             break;
         case 'd':
-            if (from.y > height - 1) {
+            if (from.y >= height - 1) {
                 console.log('invalid move!');
                 return;
             }
@@ -89,7 +95,7 @@ var doMove = function(from, direction) {
             drawGameState();
             break;
         case 'r':
-            if (from.x > width - 1) {
+            if (from.x >= width - 1) {
                 console.log('invalid move!');
                 return;
             }
@@ -118,6 +124,7 @@ var bot = new Bot({
 })
 .on('message', function(msg) {
     if (msg.text) {
+        msg.text = msg.text.toLowerCase();
         console.log('got TG message: ' + msg.text);
         var x = msg.text.charCodeAt(0) - 'a'.charCodeAt(0);
         var y = msg.text.charCodeAt(1) - '0'.charCodeAt(0);
