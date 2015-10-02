@@ -4,6 +4,13 @@ var livereload = require('livereload');
 var server = livereload.createServer();
 server.watch(__dirname + '/public');
 
+var express = require('express');
+var app = express();
+
+app.use(express.static(__dirname + '/public'));
+
+app.listen(8080);
+
 var width = 10;
 var height = 10;
 
