@@ -1,0 +1,24 @@
+<html>
+  <head>
+    <script src="https://code.createjs.com/createjs-2015.05.21.min.js"></script>
+    <script>
+      function init() {
+        var colors = ["#0099CC", "#007399", "#33CCFF", "#66D9FF", "#3D8299"];
+        var stage = new createjs.Stage("diaCanvas");
+        for (i = 1; i <= 10; i++) {
+          for (j = 1; j <= 10; j++) {
+            var circle = new createjs.Shape();
+            circle.graphics.beginFill(colors[(i+j) % colors.length]).drawCircle(0, 0, 49);
+            circle.x = i*100;
+            circle.y = j*100;
+            stage.addChild(circle);
+            stage.update();
+          }
+        }
+      }
+    </script>
+  </head>
+  <body onload="init();">
+    <canvas id="diaCanvas" width="1100" height="1100"></canvas>
+  </body>
+</html>
