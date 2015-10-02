@@ -1,5 +1,4 @@
 var _ = require('underscore');
-var io = require('socket.io')();
 
 var livereload = require('livereload');
 var server = livereload.createServer();
@@ -8,9 +7,13 @@ server.watch(__dirname + '/public');
 var express = require('express');
 var app = express();
 
-app.use(express.static(__dirname + '/public'));
+var http = require('http').Server(app);
+var io = require('socket.io')(http);
 
-app.listen(8080);
+app.use(express.static(__dirname + '/public'));
+http.listen(8080, function() {
+    console.log('listening on 8080');
+});
 
 var width = 10;
 var height = 5;
