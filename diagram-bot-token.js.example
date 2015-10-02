@@ -1,1 +1,1 @@
-return 'YOUR-BOT-API-TOKEN-HERE';
+module.exports = 'YOUR-BOT-API-TOKEN-HERE';
