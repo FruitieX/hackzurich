@@ -58,7 +58,7 @@ var checkPlayField = function() {
 
             // loop from top of playfield above removed element,
             // drop every piece down one step
-            for (var j = 0; j < y; j++) {
+            for (var j = y - 1; j >= 0; j--) {
                 gameState[j + 1][x] = gameState[j][x];
             }
             gameState[0][x] = -1;
