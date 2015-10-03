@@ -16,7 +16,7 @@ http.listen(8080, function() {
 });
 
 var width = 10;
-var height = 5;
+var height = 6;
 
 var gameState = [];
 
