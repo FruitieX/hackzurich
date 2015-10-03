@@ -24,7 +24,7 @@ for (var i = 0; i < height; i++) {
     gameState.push([]);
 }
 
-var numPlayers = 3;
+var numPlayers = 4;
 
 for (var x = 0; x < width; x++) {
     for (var y = 0; y < height; y++) {
@@ -32,25 +32,14 @@ for (var x = 0; x < width; x++) {
     }
 }
 
-checkPlayField();
-
-var drawGameState = function() {
-    console.log(gameState);
-    /*
-    for (var y = 0; y < height; y++) {
-        for (var x = 0; x < width; x++) {
-            process.stdout.write(gameState[x][y] + ', ');
-        }
-        process.stdout.write('\n');
-    }
-    */
-};
-drawGameState();
-
 var checkPlayField = function() {
     var shouldBeDeleted = [];
     for (var y = 0; y < height; y++) {
         for (var x = 0; x < width; x++) {
+            // ignore empty elements
+            if (gameState[y][x] === -1) {
+                continue;
+            }
             // check neighbors, but only if we're not going out of bounds
             if ((y > 0          && gameState[y][x] === gameState[y - 1][x])     ||
                 (x > 0          && gameState[y][x] === gameState[y]    [x - 1]) ||
@@ -61,6 +50,7 @@ var checkPlayField = function() {
         }
     }
 
+    console.log(gameState);
     if (shouldBeDeleted.length) {
         for (var i = 0; i < shouldBeDeleted.length; i++) {
             var x = shouldBeDeleted[i].x;
@@ -78,6 +68,22 @@ var checkPlayField = function() {
         checkPlayField();
     }
 };
+
+// check playfield once before starting game
+checkPlayField();
+
+var drawGameState = function() {
+    console.log(gameState);
+    /*
+    for (var y = 0; y < height; y++) {
+        for (var x = 0; x < width; x++) {
+            process.stdout.write(gameState[x][y] + ', ');
+        }
+        process.stdout.write('\n');
+    }
+    */
+};
+drawGameState();
 
 var doMove = function(from, direction) {
     if (from.x < 0 || from.x > width - 1 ||
