@@ -17,11 +17,11 @@ function drawCoordinates() {
 }
 
 function createCircle(x, y, color) {
-  circles[x][y] = new createjs.Shape();
-  circles[x][y].graphics.beginFill(colors[color]).drawCircle(0, 0, 49);
-  circles[x][y].x = y*100 + 100;
-  circles[x][y].y = x*100 + 100;
-  stage.addChild(circles[x][y]);
+  circles[y][x] = new createjs.Shape();
+  circles[y][x].graphics.beginFill(colors[color]).drawCircle(0, 0, 49);
+  circles[y][x].x = x*100 + 100;
+  circles[y][x].y = y*100 + 100;
+  stage.addChild(circles[y][x]);
 }
 
 function init() {
@@ -48,7 +48,7 @@ function init() {
         for (j = 0; j < width; j++) {
           if (gameState[i][j] == -1)
             continue;
-          createCircle(i, j, gameState[i][j]);
+          createCircle(j, i, gameState[i][j]);
         }
         stage.update();
       }
