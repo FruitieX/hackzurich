@@ -55,6 +55,11 @@ function drawCoordinates() {
     text.x = scale / 20 + (scale / 16) * i + xoffs;
     text.y = 0 + yoffs;
     stage.addChild(text);
+
+    text = new createjs.Text(String.fromCharCode(65 + i), scale / 32 + "px Helvetica", "#000000");
+    text.x = scale / 20 + (scale / 16) * i + xoffs;
+    text.y = scale / 14 * 6 + yoffs;
+    stage.addChild(text);
   }
 }
 
@@ -72,7 +77,7 @@ function createCircle(x, y, color) {
   var circle = new createjs.Shape();
   circle.graphics.beginFill(colors[color]).drawCircle(0, 0, scale / 32);
   circle.x = x*(scale / 16) + (scale / 16) + xoffs;
-  circle.y = y*(scale / 16) + (scale / 16) + yoffs;
+  circle.y = y*(scale / 16) + (scale / 16) + yoffs + scale / 64;
   gameState[y][x].color = color;
   gameState[y][x].circle = circle;
 }
