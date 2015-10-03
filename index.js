@@ -20,7 +20,7 @@ http.listen(8080, function() {
 var width = 10;
 var height = 6;
 
-var throttle = 500;
+var throttle = 1000;
 
 var players = [];
 
