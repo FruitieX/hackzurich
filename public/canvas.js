@@ -13,7 +13,7 @@ var stage;
 var gameState;
 
 function drawCoordinates() {
-  for (i = 0; i < width; i++) {
+  for (var i = 0; i < width; i++) {
     var text = new createjs.Text(String.fromCharCode(65 + i), scale / 24 + "px Helvetica", "#000000");
     text.x = scale / 15 + (scale / 12) * i + xoffs;
     text.y = 0 + yoffs;
@@ -32,12 +32,12 @@ function createCircle(x, y, color) {
 }
 
 function drawCircles() {
-  for (i = 0; i < height; i++) {
+  for (var i = 0; i < height; i++) {
     circles.push([]);
   }
 
-  for (i = 0; i < height; i++) {
-    for (j = 0; j < width; j++) {
+  for (var i = 0; i < height; i++) {
+    for (var j = 0; j < width; j++) {
       if (gameState[i][j] == -1)
         continue;
       createCircle(j, i, gameState[i][j]);
@@ -92,7 +92,7 @@ function init() {
 
       createjs.Ticker.on("tick", tick);
       createjs.Ticker.setFPS(60);
- 
+
       drawCircles();
 
       stage.update();
@@ -117,8 +117,8 @@ function init() {
 
 function tick(event) {
 
-  for (i = 0; i < height; i++) {
-    for (j = 0; j < width; j++) {
+  for (var i = 0; i < height; i++) {
+    for (var j = 0; j < width; j++) {
       if (circles[i][j] == undefined)
         continue;
       if (circles[i][j].distance > 0) {
