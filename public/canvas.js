@@ -1,3 +1,5 @@
+'use strict';
+
 var xoffs;
 var yoffs;
 
@@ -7,12 +9,20 @@ var widthPx;
 var height;
 var width;
 
-var circles;
+var scale;
+
 var colors = ["#0099CC", "#444444", "#00DB4A", "#BB1D00", "#FF8300"];
 var stage;
 var gameState;
-
 var scoreboard = [];
+
+function render() {
+  stage.removeAllChildren();
+  drawCoordinates();
+  drawScoreboard();
+  drawCircles();
+  stage.update();
+}
 
 function drawScoreboard() {
     var text = new createjs.Text('Scoreboard:', scale / 32 + "px Helvetica", "#000000");
@@ -48,27 +58,23 @@ function drawCoordinates() {
   }
 }
 
-function createCircle(x, y, color) {
-  circles[y][x] = new createjs.Shape();
-  circles[y][x].graphics.beginFill(colors[color]).drawCircle(0, 0, scale / 32);
-  circles[y][x].x = x*(scale / 16) + (scale / 16) + xoffs;
-  circles[y][x].y = y*(scale / 16) + (scale / 16) + yoffs;
-  circles[y][x].distance = 0;
-  stage.addChild(circles[y][x]);
-}
-
 function drawCircles() {
   for (var i = 0; i < height; i++) {
-    circles.push([]);
-  }
-
-  for (var i = 0; i < height; i++) {
     for (var j = 0; j < width; j++) {
-      if (gameState[i][j] == -1)
-        continue;
-      createCircle(j, i, gameState[i][j]);
+      if (gameState[i][j].color != -1) {
+        stage.addChild(gameState[i][j].circle);
+      }
     }
   }
+}
+
+function createCircle(x, y, color) {
+  var circle = new createjs.Shape();
+  circle.graphics.beginFill(colors[color]).drawCircle(0, 0, scale / 24);
+  circle.x = x*(scale / 12) + (scale / 12) + xoffs;
+  circle.y = y*(scale / 12) + (scale / 12) + yoffs;
+  gameState[y][x].color = color;
+  gameState[y][x].circle = circle;
 }
 
 function init() {
@@ -95,11 +101,7 @@ function init() {
     stage.canvas.width = window.innerWidth;
     stage.canvas.height = window.innerHeight;
 
-    stage.removeAllChildren();
-    drawScoreboard();
-    drawCoordinates();
-    drawCircles();
-    stage.update();
+    render();
   }
   resize();
   window.addEventListener('resize', resize, false);
@@ -107,50 +109,48 @@ function init() {
   var socket = io();
 
   socket.on('gameState', function(gs) {
-      stage.removeAllChildren();
 
-      gameState = gs;
-      circles = [];
+      gameState = [];
+      height = gs.length;
+      width = gs[0].length;
 
-      height = gameState.length;
-      width = gameState[0].length;
-
-      drawScoreboard();
-      drawCoordinates();
-
-      createjs.Ticker.on("tick", tick);
-      createjs.Ticker.setFPS(60);
-
-      drawCircles();
-
-      stage.update();
+      for (var i = 0; i < height; i++) {
+        gameState.push([]);
+        for (var j = 0; j < width; j++) {
+          gameState[i][j] = {};
+          createCircle(j, i, gs[i][j]);
+        }
+      }
+      render();
   });
 
   socket.on('doMove', function(move) {
-    gameState[move.y][move.x] = move.color;
     createCircle(move.x, move.y, move.color);
-    circles[move.y][move.x].distance = move.y * (scale / 12) + (scale / 12) + yoffs;
-    circles[move.y][move.x].y = 0;
-    stage.update();
+    render();
   });
 
   socket.on('clearLine', function() {
-      gameState.unshift(Array.apply(null, Array(width)).map(Number.prototype.valueOf, -1));
-      gameState.pop();
-      stage.removeAllChildren();
-      drawScoreboard();
-      drawCoordinates();
-      drawCircles();
-      stage.update();
+    var ObjectArray = [];
+    for (var i = 0; i < width; i++) {
+      ObjectArray[i] = {};
+      ObjectArray[i].color = -1;
+    }
+    gameState.unshift(ObjectArray);
+    gameState.pop();
+
+    for (var i = 0; i < height; i++) {
+      for (var j = 0; j < width; j++) {
+        if (gameState[i][j].color != -1)
+          gameState[i][j].circle.y += scale / 12;
+      }
+    }
+    render();
   });
 
   socket.on('scoreboard', function(newScoreboard) {
-      scoreboard = newScoreboard;
-      scoreboard = _.sortBy(scoreboard, 'score');
-      drawScoreboard();
-      drawCoordinates();
-      drawCircles();
-      stage.update();
+    scoreboard = newScoreboard;
+    scoreboard = _.sortBy(scoreboard, 'score');
+    render();
   });
 
   socket.on('clearCircles', function(circles) {
@@ -161,23 +161,4 @@ function init() {
       });
       */
   });
-}
-
-function tick(event) {
-
-  for (var i = 0; i < height; i++) {
-    for (var j = 0; j < width; j++) {
-      if (circles[i][j] == undefined)
-        continue;
-      if (circles[i][j].distance > 0) {
-        circles[i][j].distance -= (event.delta)/1000*1000;
-        circles[i][j].y += (event.delta)/1000*1000;
-        if (circles[i][j].distance < 0) {
-          circles[i][j].y += circles[i][j].distance;
-          circles[i][j].distance = 0;
-        }
-      }
-    }
-  }
-  stage.update(event);
 }
