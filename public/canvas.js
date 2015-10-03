@@ -32,7 +32,7 @@ function drawScoreboard() {
 
         // score
         text = new createjs.Text(player.score,
-                scale / 32 + "px Helvetica", '#000000');
+                scale / 32 + "px Helvetica", colors[i]);
         text.x = scale * 10 / 15 + xoffs;
         text.y = scale/32 + (2 * i + 2) * scale / 32 + yoffs;
         stage.addChild(text);
@@ -146,6 +146,7 @@ function init() {
 
   socket.on('scoreboard', function(newScoreboard) {
       scoreboard = newScoreboard;
+      scoreboard = _.sortBy(scoreboard, 'score');
       drawScoreboard();
       drawCoordinates();
       drawCircles();
