@@ -146,6 +146,8 @@ try {
         token: token
     })
     .on('message', function(msg) {
+        console.log(msg);
+
         if (msg.text) {
             msg.text = msg.text.toLowerCase();
 
@@ -159,6 +161,7 @@ try {
                 }
 
                 bot.sendMessage({
+                    text: 'Welcome to diagram!',
                     chat_id: msg.chat ? msg.chat.id : msg.from.id,
                     reply_to_message_id: msg.message_id,
                     reply_markup: {
@@ -177,8 +180,8 @@ try {
                 });
             // drop piece commands
             } else if (msg.text.substr(0, 1) === '/' &&
-                       msg.charCodeAt(1) >= 'a'.charCodeAt(0) &&
-                       msg.charCodeAt(1) <= 'z'.charCodeAt(0)) {
+                       msg.text.charCodeAt(1) >= 'a'.charCodeAt(0) &&
+                       msg.text.charCodeAt(1) <= 'z'.charCodeAt(0)) {
                 if (!color) {
                     color = initPlayer(msg);
                 }
@@ -197,4 +200,11 @@ try {
     console.log(e);
     console.log('did you forget to write your API key to ~/.diagram-bot-token.js?');
     console.log('will use stdin for input instead (TODO)');
+
+    process.stdin.on('readable', function() {
+        var chunk = process.stdin.read();
+        if (chunk !== null) {
+            process.stdout.write('data: ' + chunk);
+        }
+    });
 }
