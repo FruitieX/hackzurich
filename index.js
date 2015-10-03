@@ -50,7 +50,6 @@ var checkPlayField = function() {
         }
     }
 
-    console.log(gameState);
     if (shouldBeDeleted.length) {
         for (var i = 0; i < shouldBeDeleted.length; i++) {
             var x = shouldBeDeleted[i].x;
