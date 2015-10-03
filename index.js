@@ -140,7 +140,7 @@ var checkPlayField = function() {
             for (var index = 0; index < lengths.length; index++){
                 if(lengths[index] >= removedLength){
                     for(var n = 0; n < lengths[index]; n++){
-                        var temp = {x: x + deltas[index][0] * n, y: y + deltas[index][1] * n};
+                        var temp = {x: x + deltas[index][0] * n, y: y + deltas[index][1] * n, player: gameState[y][x]};
                         if (shouldBeDeleted.length === 0){
                             shouldBeDeleted.push(temp);
                             continue;
@@ -169,13 +169,16 @@ var checkPlayField = function() {
             for (var j = y - 1; j >= 0; j--) {
                 gameState[j + 1][x] = gameState[j][x];
             }
+	    players[shouldBeDeleted[i].player].score++;
             gameState[0][x] = -1;
+	    
         }
 
         // call recursively until there is nothing more to delete
         checkPlayField();
 
         io.sockets.emit('clearCircles', shouldBeDeleted);
+	io.sockets.emit('scoreboard', players);
     }
 };
 
@@ -207,7 +210,6 @@ var doMove = function(pos, color) {
 
     if (gameState[0][pos] !== -1) {
         console.log('invalid move! column ' + posCharacter + ' is full.');
-	    var deltas = [[1, 0], [1, 1], [0, 1], [-1, 1]];
         return;
     }
 
