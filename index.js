@@ -34,7 +34,49 @@ for (var x = 0; x < width; x++) {
     }
 }
 
+var clearLineTimeoutVal = 5000;
+var clearLineTimeout = null;
+
+var clearLine = function() {
+    gameState.unshift(Array.apply(null, Array(width)).map(Number.prototype.valueOf, -1));
+    gameState.pop();
+    console.log('line cleared!');
+    console.log(gameState);
+    io.sockets.emit('clearLine');
+    resetClearLineTimeout();
+};
+
+var resetClearLineTimeout = function() {
+    clearTimeout(clearLineTimeout);
+    clearLineTimeout = setTimeout(function() {
+        clearLine();
+    }, clearLineTimeoutVal);
+};
+
+resetClearLineTimeout();
+
 var checkPlayField = function() {
+    var percentage = 0;
+    var active = 0;
+    var inactive = 0;
+
+    for (var x = 0; x < width; x++) {
+        for (var y = 0; y < height; y++) {
+            if (gameState[y][x] !== -1) {
+                active++;
+            } else {
+                inactive++;
+            }
+        }
+    }
+
+    percentage = active / (active + inactive);
+
+    if (percentage > 0.70) {
+        clearLine();
+        checkPlayField();
+    }
+    /*
     var shouldBeDeleted = [];
     for (var y = 0; y < height; y++) {
         for (var x = 0; x < width; x++) {
@@ -68,6 +110,7 @@ var checkPlayField = function() {
         // call recursively until there is nothing more to delete
         checkPlayField();
     }
+    */
 };
 
 // check playfield once before starting game
@@ -122,7 +165,7 @@ var doMove = function(pos, color) {
     }
 
     // TODO: uncomment when checkPlayField is implemented
-    //checkPlayField();
+    checkPlayField();
     drawGameState();
 
     var move = {

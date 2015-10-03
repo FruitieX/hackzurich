@@ -24,6 +24,20 @@ function createCircle(x, y, color) {
   stage.addChild(circles[y][x]);
 }
 
+function drawCircles() {
+  for (i = 0; i < height; i++) {
+    circles.push([]);
+  }
+
+  for (i = 0; i < height; i++) {
+    for (j = 0; j < width; j++) {
+      if (gameState[i][j] == -1)
+        continue;
+      createCircle(j, i, gameState[i][j]);
+    }
+  }
+}
+
 function init() {
   stage = new createjs.Stage("diaCanvas");
 
@@ -40,22 +54,22 @@ function init() {
 
       drawCoordinates();
 
-      for (i = 0; i < height; i++) {
-        circles.push([]);
-      }
+      drawCircles();
 
-      for (i = 0; i < height; i++) {
-        for (j = 0; j < width; j++) {
-          if (gameState[i][j] == -1)
-            continue;
-          createCircle(j, i, gameState[i][j]);
-        }
-        stage.update();
-      }
+      stage.update();
   });
 
   socket.on('doMove', function(move) {
     createCircle(move.x, move.y, move.color);
     stage.update();
+  });
+
+  socket.on('clearLine', function() {
+      gameState.unshift(Array.apply(null, Array(width)).map(Number.prototype.valueOf, -1));
+      gameState.pop();
+      stage.removeAllChildren();
+      drawCoordinates();
+      drawCircles();
+      stage.update();
   });
 }
