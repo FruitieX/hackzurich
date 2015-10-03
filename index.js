@@ -75,25 +75,90 @@ var checkPlayField = function() {
     if (percentage > 0.70) {
         clearLine();
         checkPlayField();
+        return;
     }
-    /*
+
     var shouldBeDeleted = [];
+    var removedLength = 3;
+    var deltas = [[1, 0], [1, 1], [0, 1], [-1, 1]];
+
     for (var y = 0; y < height; y++) {
         for (var x = 0; x < width; x++) {
             // ignore empty elements
             if (gameState[y][x] === -1) {
                 continue;
             }
-            // check neighbors, but only if we're not going out of bounds
-            if ((y > 0          && gameState[y][x] === gameState[y - 1][x])     ||
-                (x > 0          && gameState[y][x] === gameState[y]    [x - 1]) ||
-                (y < height - 1 && gameState[y][x] === gameState[y + 1][x])     ||
-                (x < width - 1  && gameState[y][x] === gameState[y]    [x + 1])) {
-                shouldBeDeleted.push({x: x, y: y});
+            // check the adjacencies to right
+            var lengths = [0, 0, 0, 0];
+            for(var i = x; i < width; i++){
+                if (gameState[y][x] === gameState[y][i]){
+                    lengths[0] += 1;
+                }
+                else {
+                    break;
+                }
+            }
+            // check the direction to botright
+            var j = y;
+            for(var i = x; i < width; i++){
+                if (j >= height){
+                    break;
+                }
+                if (gameState[y][x] === gameState[j][i]){
+                    lengths[1] += 1;
+                }
+                else {
+                    break;
+                }
+                j++;
+            }
+            // check the direction to bot
+            for(var j = y; j < height; j++){
+                if (gameState[y][x] === gameState[j][x]){
+                    lengths[2] += 1;
+                }
+                else {
+                    break;
+                }
+            }
+            // check the direction to botleft
+            var j = y;
+            for(var i = x; i >= 0; i--){
+                if (j >= height){
+                    break;
+                }
+                if (gameState[y][x] === gameState[j][i]){
+                    lengths[3] += 1;
+                }
+                else {
+                    break;
+                }
+                j++;
+            }
+            //console.log(lengths);
+            // Check if there are any connected lines with length above threshold
+            for (var index = 0; index < lengths.length; index++){
+                if(lengths[index] >= removedLength){
+                    for(var n = 0; n < lengths[index]; n++){
+                        var temp = {x: x + deltas[index][0] * n, y: y + deltas[index][1] * n, player: gameState[y][x]};
+                        if (shouldBeDeleted.length === 0){
+                            shouldBeDeleted.push(temp);
+                            continue;
+                        }
+                        for(var m = 0; m < shouldBeDeleted.length; m++){
+                            if(shouldBeDeleted[m].x === temp.x && shouldBeDeleted[m].y === temp.y){
+                                break;
+                            }
+                            else if(m === (shouldBeDeleted.length - 1)) {
+                                shouldBeDeleted.push(temp);
+                            }
+                        }
+                    }
+                }
             }
         }
     }
-
+    // Actually delete the marks
     if (shouldBeDeleted.length) {
         for (var i = 0; i < shouldBeDeleted.length; i++) {
             var x = shouldBeDeleted[i].x;
@@ -104,13 +169,19 @@ var checkPlayField = function() {
             for (var j = y - 1; j >= 0; j--) {
                 gameState[j + 1][x] = gameState[j][x];
             }
+
+            if (players[shouldBeDeleted[i].player]) {
+                players[shouldBeDeleted[i].player].score++;
+            }
             gameState[0][x] = -1;
         }
 
         // call recursively until there is nothing more to delete
         checkPlayField();
+
+        io.sockets.emit('clearCircles', shouldBeDeleted);
+        io.sockets.emit('scoreboard', players);
     }
-    */
 };
 
 // check playfield once before starting game
@@ -174,10 +245,12 @@ var doMove = function(pos, color) {
         color: color
     };
     io.sockets.emit('doMove', move);
+    io.sockets.emit('scoreboard', players);
 };
 
 io.on('connection', function(socket) {
     socket.emit('gameState', gameState);
+    socket.emit('scoreboard', players);
 });
 
 var initPlayer = function(msg) {
@@ -185,7 +258,8 @@ var initPlayer = function(msg) {
 
     var player = {
         name: msg.from.first_name,
-        id: msg.from.id
+        id: msg.from.id,
+        score: 0
     }
 
     // return new index
@@ -293,6 +367,7 @@ rl.on('line', function(line){
     if (color === -1) {
         var player = {
             name: 'Test player ' + input.color,
+            score: 0,
             id: 'dummy' + input.color
         }
 

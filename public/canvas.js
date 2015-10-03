@@ -12,18 +12,45 @@ var scale;
 var colors = ["#0099CC", "#444444", "#00DB4A", "#BB1D00", "#FF8300"];
 var stage;
 var gameState;
+var scoreboard = [];
 
 function render() {
   stage.removeAllChildren();
   drawCoordinates();
+  drawScoreboard();
   drawCircles();
   stage.update();
 }
 
+function drawScoreboard() {
+    var text = new createjs.Text('Scoreboard:', scale / 32 + "px Helvetica", "#000000");
+    text.x = scale * 10 / 15 + xoffs;
+    text.y = 0 + yoffs;
+    stage.addChild(text);
+
+    for (var i = 0; i < scoreboard.length; i++) {
+        var player = scoreboard[i];
+
+        // player name
+        text = new createjs.Text(player.name + ':',
+                scale / 32 + "px Helvetica", colors[i]);
+        text.x = scale * 10 / 15 + xoffs;
+        text.y = scale/32 + (2 * i + 1) * scale / 32 + yoffs;
+        stage.addChild(text);
+
+        // score
+        text = new createjs.Text(player.score,
+                scale / 32 + "px Helvetica", colors[i]);
+        text.x = scale * 10 / 15 + xoffs;
+        text.y = scale/32 + (2 * i + 2) * scale / 32 + yoffs;
+        stage.addChild(text);
+    }
+}
+
 function drawCoordinates() {
   for (var i = 0; i < width; i++) {
-    var text = new createjs.Text(String.fromCharCode(65 + i), scale / 24 + "px Helvetica", "#000000");
-    text.x = scale / 15 + (scale / 12) * i + xoffs;
+    var text = new createjs.Text(String.fromCharCode(65 + i), scale / 32 + "px Helvetica", "#000000");
+    text.x = scale / 20 + (scale / 16) * i + xoffs;
     text.y = 0 + yoffs;
     stage.addChild(text);
   }
@@ -101,19 +128,35 @@ function init() {
   });
 
   socket.on('clearLine', function() {
-      var ObjectArray = [];
-      for (var i = 0; i < width; i++) {
-        ObjectArray[i] = {};
-        ObjectArray[i].color = -1;
+    var ObjectArray = [];
+    for (var i = 0; i < width; i++) {
+      ObjectArray[i] = {};
+      ObjectArray[i].color = -1;
+    }
+    gameState.unshift(ObjectArray);
+    gameState.pop();
+
+    for (var i = 0; i < height; i++) {
+      for (var j = 0; j < width; j++) {
+        if (gameState[i][j].color != -1)
+          gameState[i][j].circle.y += scale / 12;
       }
-      gameState.unshift(ObjectArray);
-      gameState.pop();
-      for (var i = 0; i < height; i++) {
-        for (var j = 0; j < width; j++) {
-          if (gameState[i][j].color != -1)
-            gameState[i][j].circle.y += scale / 12;
-        }
-      }
-      render();
+    }
+    render();
+  });
+
+  socket.on('scoreboard', function(newScoreboard) {
+    scoreboard = newScoreboard;
+    scoreboard = _.sortBy(scoreboard, 'score');
+    render();
+  });
+
+  socket.on('clearCircles', function(circles) {
+      // TODO:
+      /*
+      _.each(circles, function(circle) {
+          gameState[circle.y][circle.x] = -1;
+      });
+      */
   });
 }
