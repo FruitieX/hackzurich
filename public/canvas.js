@@ -27,6 +27,7 @@ function createCircle(x, y, color) {
   circles[y][x].graphics.beginFill(colors[color]).drawCircle(0, 0, scale / 24);
   circles[y][x].x = x*(scale / 12) + (scale / 12) + xoffs;
   circles[y][x].y = y*(scale / 12) + (scale / 12) + yoffs;
+  circles[y][x].distance = 0;
   stage.addChild(circles[y][x]);
 }
 
@@ -89,6 +90,9 @@ function init() {
 
       drawCoordinates();
 
+      createjs.Ticker.on("tick", tick);
+      createjs.Ticker.setFPS(60);
+ 
       drawCircles();
 
       stage.update();
@@ -96,6 +100,8 @@ function init() {
 
   socket.on('doMove', function(move) {
     createCircle(move.x, move.y, move.color);
+    circles[move.y][move.x].distance = move.y * (scale / 12) + (scale / 12);
+    circles[move.y][move.x].y = 0;
     stage.update();
   });
 
@@ -107,4 +113,23 @@ function init() {
       drawCircles();
       stage.update();
   });
+}
+
+function tick(event) {
+
+  for (i = 0; i < height; i++) {
+    for (j = 0; j < width; j++) {
+      if (circles[i][j] == undefined)
+        continue;
+      if (circles[i][j].distance > 0) {
+        circles[i][j].distance -= (event.delta)/1000*1000;
+        circles[i][j].y += (event.delta)/1000*1000;
+        if (circles[i][j].distance < 0) {
+          circles[i][j].y += circles[i][j].distance;
+          circles[i][j].distance = 0;
+        }
+      }
+    }
+  }
+  stage.update(event);
 }
