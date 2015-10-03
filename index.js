@@ -88,10 +88,11 @@ drawGameState();
 
 var doMove = function(pos, color) {
     var posCharacter = pos;
-    pos = pos.charCodeAt(0) - pos.charCodeAt('a');
+    pos = pos.toLowerCase();
+    pos = pos.charCodeAt(0) - 'a'.charCodeAt(0);
 
     if (pos < 0 || pos > width - 1) {
-        console.log('invalid move!');
+        console.log('invalid move! out of bounds.');
         return;
     }
 
@@ -100,8 +101,8 @@ var doMove = function(pos, color) {
         return;
     }
 
-    // search first piece that either contains a piece or is beyond the array
-    // (undefined), put new piece on top of it
+    // search from top the first place that either contains a piece or is
+    // beyond the array (undefined), put new piece on top of it
     var y;
     for (var i = 0; i < height; i++) {
         if (gameState[i][pos] !== -1) {
@@ -146,6 +147,7 @@ try {
         token: token
     })
     .on('message', function(msg) {
+        console.log('telegram message:');
         console.log(msg);
 
         if (msg.text) {
@@ -156,7 +158,7 @@ try {
             });
 
             if (!msg.text.indexOf('/start')) {
-                if (!color) {
+                if (color === -1) {
                     color = initPlayer(msg);
                 }
 
@@ -197,7 +199,7 @@ try {
                        msg.text.charCodeAt(1) >= 'a'.charCodeAt(0) &&
                        msg.text.charCodeAt(1) <= 'z'.charCodeAt(0)) {
                 // commands for dropping pieces (/a, /b, /c, etc.)
-                if (!color) {
+                if (color === -1) {
                     color = initPlayer(msg);
                 }
 
@@ -234,11 +236,14 @@ try {
             return player.id === 'dummy' + input.color;
         });
 
-        if (!color) {
+        if (color === -1) {
             var player = {
                 name: 'Test player ' + input.color,
                 id: 'dummy' + input.color
             }
+
+            console.log('adding new player: ' + player.id);
+            console.log(player);
 
             // return new index
             color = players.push(player) - 1;
