@@ -34,7 +34,8 @@ var numPlayers = 6;
 
 for (var x = 0; x < width; x++) {
     for (var y = 0; y < height; y++) {
-        gameState[y][x] = Math.floor(Math.random() * numPlayers);
+        //gameState[y][x] = Math.floor(Math.random() * numPlayers);
+        gameState[y][x] = -1;
     }
 }
 
@@ -58,7 +59,7 @@ var clearLine = function() {
 
     percentage = active / (active + inactive);
 
-    if (percentage < 1/3) {
+    if (percentage < 1/2) {
         console.log('skipping line clear due to low percentage!');
         return;
     }
