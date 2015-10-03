@@ -45,6 +45,38 @@ var drawGameState = function() {
 };
 drawGameState();
 
+var checkPlayField = function() {
+    var shouldBeDeleted = [];
+    for (var y = 0; y < height; y++) {
+        for (var x = 0; x < width; x++) {
+            // check neighbors, but only if we're not going out of bounds
+            if ((y > 0          && gameState[y][x] === gameState[y - 1][x])     ||
+                (x > 0          && gameState[y][x] === gameState[y]    [x - 1]) ||
+                (y < height - 1 && gameState[y][x] === gameState[y + 1][x])     ||
+                (x < width - 1  && gameState[y][x] === gameState[y]    [x + 1])) {
+                shouldBeDeleted.push({x: x, y: y});
+            }
+        }
+    }
+
+    if (shouldBeDeleted.length) {
+        for (var i = 0; i < shouldBeDeleted.length; i++) {
+            var x = shouldBeDeleted[i].x;
+            var y = shouldBeDeleted[i].y;
+
+            // loop from top of playfield above removed element,
+            // drop every piece down one step
+            for (var j = 0; j < y; j++) {
+                gameState[j + 1][x] = gameState[j][x];
+            }
+            gameState[0][x] = -1;
+        }
+
+        // call recursively until there is nothing more to delete
+        checkPlayField();
+    }
+};
+
 var doMove = function(from, direction) {
     if (from.x < 0 || from.x > width - 1 ||
         from.y < 0 || from.y > height - 1) {
@@ -64,6 +96,8 @@ var doMove = function(from, direction) {
             gameState[from.y][from.x] = gameState[from.y - 1][from.x];
             gameState[from.y - 1][from.x] = temp;
 
+            checkPlayField();
+
             var to = {x: from.x, y: from.y - 1};
             io.sockets.emit('doMove', [from, to]);
             drawGameState();
@@ -76,6 +110,8 @@ var doMove = function(from, direction) {
 
             gameState[from.y][from.x] = gameState[from.y + 1][from.x];
             gameState[from.y + 1][from.x] = temp;
+
+            checkPlayField();
 
             var to = {x: from.x, y: from.y + 1};
             io.sockets.emit('doMove', [from, to]);
@@ -90,6 +126,8 @@ var doMove = function(from, direction) {
             gameState[from.y][from.x] = gameState[from.y][from.x - 1];
             gameState[from.y][from.x - 1] = temp;
 
+            checkPlayField();
+
             var to = {x: from.x - 1, y: from.y};
             io.sockets.emit('doMove', [from, to]);
             drawGameState();
@@ -102,6 +140,8 @@ var doMove = function(from, direction) {
 
             gameState[from.y][from.x] = gameState[from.y][from.x + 1];
             gameState[from.y][from.x + 1] = temp;
+
+            checkPlayField();
 
             var to = {x: from.x + 1, y: from.y};
             io.sockets.emit('doMove', [from, to]);
@@ -116,22 +156,29 @@ io.on('connection', function(socket) {
     socket.emit('gameState', gameState);
 });
 
-var token = require(process.env.HOME + '/.diagram-bot-token.js');
-var Bot = require('node-telegram-bot');
+try {
+    var token = require(process.env.HOME + '/.diagram-bot-token.js');
+    var Bot = require('node-telegram-bot');
 
-var bot = new Bot({
-    token: token
-})
-.on('message', function(msg) {
-    if (msg.text) {
-        msg.text = msg.text.toLowerCase();
-        console.log('got TG message: ' + msg.text);
-        var x = msg.text.charCodeAt(0) - 'a'.charCodeAt(0);
-        var y = msg.text.charCodeAt(1) - '0'.charCodeAt(0);
-        var dir = msg.text.substr(2, 3);
+    var bot = new Bot({
+        token: token
+    })
+    .on('message', function(msg) {
+        if (msg.text) {
+            msg.text = msg.text.toLowerCase();
+            console.log('got TG message: ' + msg.text);
+            var x = msg.text.charCodeAt(0) - 'a'.charCodeAt(0);
+            var y = msg.text.charCodeAt(1) - '0'.charCodeAt(0);
+            var dir = msg.text.substr(2, 3);
 
-        doMove({x: x, y: y}, dir);
-    }
-});
+            doMove({x: x, y: y}, dir);
+        }
+    });
 
-bot.start();
+    bot.start();
+} catch(e) {
+    console.log('error initializing telegram bot API!');
+    console.log(e);
+    console.log('did you forget to write your API key to ~/.diagram-bot-token.js?');
+    console.log('will use stdin for input instead (TODO)');
+}
