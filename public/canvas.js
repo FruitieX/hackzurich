@@ -148,7 +148,7 @@ function init() {
     for (var i = 0; i < height; i++) {
       for (var j = 0; j < width; j++) {
         if (gameState[i][j].color != -1)
-          gameState[i][j].circle.y += scale / 12;
+          gameState[i][j].circle.y += scale / 16;
       }
     }
     render();
@@ -161,11 +161,9 @@ function init() {
   });
 
   socket.on('clearCircles', function(circles) {
-      // TODO:
-      /*
       _.each(circles, function(circle) {
           gameState[circle.y][circle.x] = -1;
       });
-      */
+      render();
   });
 }
