@@ -20,6 +20,8 @@ http.listen(8080, function() {
 var width = 10;
 var height = 6;
 
+var throttle = 500;
+
 var players = [];
 
 var gameState = [];
@@ -284,6 +286,7 @@ var initPlayer = function(msg) {
     var player = {
         name: msg.from.first_name,
         id: msg.from.id,
+        lastCmd: 0,
         score: 0
     }
 
@@ -355,6 +358,12 @@ try {
                     color = initPlayer(msg);
                 }
 
+                if (new Date().getTime() - players[color].lastCmd < throttle) {
+                    console.log('skipping too fast cmd!');
+                    return;
+                }
+                players[color].lastCmd = new Date().getTime();
+
                 doMove(msg.text.substr(1, 2), color);
             } else {
                 console.log('error: unknown command!');
@@ -393,6 +402,7 @@ rl.on('line', function(line){
         var player = {
             name: 'Test player ' + input.color,
             score: 0,
+            lastCmd: 0,
             id: 'dummy' + input.color
         }
 
