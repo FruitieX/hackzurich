@@ -104,7 +104,7 @@ var checkPlayField = function() {
     }
 
     var shouldBeDeleted = [];
-    var removedLength = 3;
+    var removedLength = 4;
     var deltas = [[1, 0], [1, 1], [0, 1], [-1, 1]];
 
     for (var y = 0; y < height; y++) {
