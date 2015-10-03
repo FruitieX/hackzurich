@@ -21,6 +21,7 @@ function createCircle(x, y, color) {
   circles[y][x].graphics.beginFill(colors[color]).drawCircle(0, 0, 49);
   circles[y][x].x = x*100 + 100;
   circles[y][x].y = y*100 + 100;
+  circles[y][x].distance = 0;
   stage.addChild(circles[y][x]);
 }
 
@@ -46,16 +47,41 @@ function init() {
 
       for (i = 0; i < height; i++) {
         for (j = 0; j < width; j++) {
-          if (gameState[i][j] == -1)
+          if (gameState[i][j] == -1) {
+            circles[i][j] == undefined;
             continue;
+          }
           createCircle(j, i, gameState[i][j]);
         }
         stage.update();
       }
+      createjs.Ticker.on("tick", tick);
+      createjs.Ticker.setFPS(60);
   });
 
   socket.on('doMove', function(move) {
     createCircle(move.x, move.y, move.color);
+    circles[move.y][move.x].distance = move.y * 100 + 100;
+    circles[move.y][move.x].y = 0;
     stage.update();
   });
+}
+
+function tick(event) {
+
+  for (i = 0; i < height; i++) {
+    for (j = 0; j < width; j++) {
+      if (circles[i][j] == undefined)
+        continue;
+      if (circles[i][j].distance > 0) {
+        circles[i][j].distance -= (event.delta)/1000*1000;
+        circles[i][j].y += (event.delta)/1000*1000;
+        if (circles[i][j].distance < 0) {
+          circles[i][j].y += circles[i][j].distance;
+          circles[i][j].distance = 0;
+        }
+      }
+    }
+  }
+  stage.update(event);
 }
