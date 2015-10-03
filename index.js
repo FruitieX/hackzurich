@@ -174,10 +174,12 @@ var doMove = function(pos, color) {
         color: color
     };
     io.sockets.emit('doMove', move);
+    io.sockets.emit('scoreboard', players);
 };
 
 io.on('connection', function(socket) {
     socket.emit('gameState', gameState);
+    socket.emit('scoreboard', players);
 });
 
 var initPlayer = function(msg) {
@@ -185,7 +187,8 @@ var initPlayer = function(msg) {
 
     var player = {
         name: msg.from.first_name,
-        id: msg.from.id
+        id: msg.from.id,
+        score: 0
     }
 
     // return new index
@@ -293,6 +296,7 @@ rl.on('line', function(line){
     if (color === -1) {
         var player = {
             name: 'Test player ' + input.color,
+            score: 0,
             id: 'dummy' + input.color
         }
 

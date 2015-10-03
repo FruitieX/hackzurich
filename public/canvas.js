@@ -12,21 +12,47 @@ var colors = ["#0099CC", "#444444", "#00DB4A", "#BB1D00", "#FF8300"];
 var stage;
 var gameState;
 
+var scoreboard = [];
+
+function drawScoreboard() {
+    var text = new createjs.Text('Scoreboard', scale / 32 + "px Helvetica", "#000000");
+    text.x = scale * 10 / 15 + xoffs;
+    text.y = 0 + yoffs;
+    stage.addChild(text);
+
+    for (var i = 0; i < scoreboard.length; i++) {
+        var player = scoreboard[i];
+
+        // player name
+        text = new createjs.Text(player.name + ':',
+                scale / 32 + "px Helvetica", colors[i]);
+        text.x = scale * 10 / 15 + xoffs;
+        text.y = scale/32 + (2 * i + 1) * scale / 32 + yoffs;
+        stage.addChild(text);
+
+        // score
+        text = new createjs.Text(player.score,
+                scale / 32 + "px Helvetica", '#000000');
+        text.x = scale * 10 / 15 + xoffs;
+        text.y = scale/32 + (2 * i + 2) * scale / 32 + yoffs;
+        stage.addChild(text);
+    }
+}
+
 function drawCoordinates() {
   for (var i = 0; i < width; i++) {
-    var text = new createjs.Text(String.fromCharCode(65 + i), scale / 24 + "px Helvetica", "#000000");
-    text.x = scale / 15 + (scale / 12) * i + xoffs;
+    var text = new createjs.Text(String.fromCharCode(65 + i), scale / 32 + "px Helvetica", "#000000");
+    text.x = scale / 20 + (scale / 16) * i + xoffs;
     text.y = 0 + yoffs;
     stage.addChild(text);
   }
-  stage.update();
 }
 
 function createCircle(x, y, color) {
   circles[y][x] = new createjs.Shape();
-  circles[y][x].graphics.beginFill(colors[color]).drawCircle(0, 0, scale / 24);
-  circles[y][x].x = x*(scale / 12) + (scale / 12) + xoffs;
-  circles[y][x].y = y*(scale / 12) + (scale / 12) + yoffs;
+  circles[y][x].graphics.beginFill(colors[color]).drawCircle(0, 0, scale / 32);
+  circles[y][x].x = x*(scale / 16) + (scale / 16) + xoffs;
+  circles[y][x].y = y*(scale / 16) + (scale / 16) + yoffs;
   circles[y][x].distance = 0;
   stage.addChild(circles[y][x]);
 }
@@ -70,6 +96,7 @@ function init() {
     stage.canvas.height = window.innerHeight;
 
     stage.removeAllChildren();
+    drawScoreboard();
     drawCoordinates();
     drawCircles();
     stage.update();
@@ -88,6 +115,7 @@ function init() {
       height = gameState.length;
       width = gameState[0].length;
 
+      drawScoreboard();
       drawCoordinates();
 
       createjs.Ticker.on("tick", tick);
@@ -110,6 +138,15 @@ function init() {
       gameState.unshift(Array.apply(null, Array(width)).map(Number.prototype.valueOf, -1));
       gameState.pop();
       stage.removeAllChildren();
+      drawScoreboard();
+      drawCoordinates();
+      drawCircles();
+      stage.update();
+  });
+
+  socket.on('scoreboard', function(newScoreboard) {
+      scoreboard = newScoreboard;
+      drawScoreboard();
       drawCoordinates();
       drawCircles();
       stage.update();
