@@ -34,8 +34,49 @@ for (var x = 0; x < width; x++) {
     }
 }
 
+var clearLineTimeoutVal = 5000;
+var clearLineTimeout = null;
+
+var clearLine = function() {
+    gameState.unshift(Array.apply(null, Array(width)).map(Number.prototype.valueOf, -1));
+    gameState.pop();
+    console.log('line cleared!');
+    console.log(gameState);
+    io.sockets.emit('clearLine');
+    resetClearLineTimeout();
+};
+
+var resetClearLineTimeout = function() {
+    clearTimeout(clearLineTimeout);
+    clearLineTimeout = setTimeout(function() {
+        clearLine();
+    }, clearLineTimeoutVal);
+};
+
+resetClearLineTimeout();
 
 var checkPlayField = function() {
+    var percentage = 0;
+    var active = 0;
+    var inactive = 0;
+
+    for (var x = 0; x < width; x++) {
+        for (var y = 0; y < height; y++) {
+            if (gameState[y][x] !== -1) {
+                active++;
+            } else {
+                inactive++;
+            }
+        }
+    }
+
+    percentage = active / (active + inactive);
+
+    if (percentage > 0.70) {
+        clearLine();
+        checkPlayField();
+    }
+    /*
     var shouldBeDeleted = [];
     var removedLength = 3;
     var deltas = [[1, 0], [1, 1], [0, 1], [-1, 1]];
@@ -134,6 +175,7 @@ var checkPlayField = function() {
         // call recursively until there is nothing more to delete
         checkPlayField();
     }
+    */
 };
 
 // check playfield once before starting game
@@ -153,11 +195,12 @@ var drawGameState = function() {
 drawGameState();
 
 var doMove = function(pos, color) {
-    var posCharacter = pos;
-    pos = pos.charCodeAt(0) - pos.charCodeAt('a');
+    pos = pos.toLowerCase();
+    var posCharacter = pos.substr(0, 1);
+    pos = pos.charCodeAt(0) - 'a'.charCodeAt(0);
 
     if (pos < 0 || pos > width - 1) {
-        console.log('invalid move!');
+        console.log('invalid move! out of bounds.');
         return;
     }
 
@@ -167,17 +210,27 @@ var doMove = function(pos, color) {
         return;
     }
 
-    // search first piece that either contains a piece or is beyond the array
-    // (undefined), put new piece on top of it
+    // search from top the first place that either contains a piece or is
+    // beyond the array (undefined), put new piece on top of it
     var y;
     for (var i = 0; i < height; i++) {
+        // first element found
         if (gameState[i][pos] !== -1) {
+            // put piece above it
             y = i - 1;
             gameState[i - 1][pos] = color;
             break;
         }
+        // got to last row and still no elements found
+        if (gameState[i][pos] === -1 && i === height - 1) {
+            // put piece on last row
+            y = i;
+            gameState[i][pos] = color;
+            break;
+        }
     }
 
+    // TODO: uncomment when checkPlayField is implemented
     checkPlayField();
     drawGameState();
 
@@ -187,10 +240,12 @@ var doMove = function(pos, color) {
         color: color
     };
     io.sockets.emit('doMove', move);
+    io.sockets.emit('scoreboard', players);
 };
 
 io.on('connection', function(socket) {
     socket.emit('gameState', gameState);
+    socket.emit('scoreboard', players);
 });
 
 var initPlayer = function(msg) {
@@ -198,7 +253,8 @@ var initPlayer = function(msg) {
 
     var player = {
         name: msg.from.first_name,
-        id: msg.from.id
+        id: msg.from.id,
+        score: 0
     }
 
     // return new index
@@ -213,6 +269,7 @@ try {
         token: token
     })
     .on('message', function(msg) {
+        console.log('telegram message:');
         console.log(msg);
 
         if (msg.text) {
@@ -222,8 +279,8 @@ try {
                 return player.id === msg.from.id;
             });
 
-            if (msg.text.indexOf('/start')) {
-                if (!color) {
+            if (!msg.text.indexOf('/start')) {
+                if (color === -1) {
                     color = initPlayer(msg);
                 }
 
@@ -245,11 +302,26 @@ try {
                         console.log(err);
                     }
                 });
-            // drop piece commands
+            } else if (!msg.text.indexOf('/stop')) {
+                bot.sendMessage({
+                    text: msg.from.first_name + ' left the game.',
+                    chat_id: msg.chat ? msg.chat.id : msg.from.id,
+                    reply_to_message_id: msg.message_id,
+                    reply_markup: {
+                        hide_keyboard: true,
+                        selective: true
+                    }
+                }, function(err) {
+                    if (err) {
+                        console.log('error on sendMessage:');
+                        console.log(err);
+                    }
+                });
             } else if (msg.text.substr(0, 1) === '/' &&
                        msg.text.charCodeAt(1) >= 'a'.charCodeAt(0) &&
                        msg.text.charCodeAt(1) <= 'z'.charCodeAt(0)) {
-                if (!color) {
+                // commands for dropping pieces (/a, /b, /c, etc.)
+                if (color === -1) {
                     color = initPlayer(msg);
                 }
 
@@ -263,15 +335,43 @@ try {
 
     bot.start();
 } catch(e) {
-    console.log('error initializing telegram bot API!');
+    console.log('ERROR initializing telegram bot API!');
     console.log(e);
-    console.log('did you forget to write your API key to ~/.diagram-bot-token.js?');
-    console.log('will use stdin for input instead (TODO)');
-
-    process.stdin.on('readable', function() {
-        var chunk = process.stdin.read();
-        if (chunk !== null) {
-            process.stdout.write('data: ' + chunk);
-        }
-    });
+    console.log('Did you forget to write your API key to ~/.diagram-bot-token.js?');
+    console.log('Will use stdin for input instead. Syntax:');
+    console.log('    3d - inserts element for player 3 in position D');
 }
+
+var readline = require('readline');
+var rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout,
+    terminal: false
+});
+
+rl.on('line', function(line){
+    var input = {
+        color: line.substr(0, 1),
+        pos: line.substr(1, 2).toLowerCase()
+    };
+
+    var color = _.findIndex(players, function(player) {
+        return player.id === 'dummy' + input.color;
+    });
+
+    if (color === -1) {
+        var player = {
+            name: 'Test player ' + input.color,
+            score: 0,
+            id: 'dummy' + input.color
+        }
+
+        console.log('adding new player: ' + player.id);
+        console.log(player);
+
+        // return new index
+        color = players.push(player) - 1;
+    }
+
+    doMove(input.pos, color);
+});
