@@ -2,7 +2,7 @@ var height;
 var width;
 
 var circles;
-var colors = ["#0099CC", "#444444", "#00DB4A", "#005875", "#FF8300"];
+var colors = ["#0099CC", "#444444", "#00DB4A", "#BB1D00", "#FF8300"];
 var stage;
 var gameState;
 
@@ -14,6 +14,14 @@ function drawCoordinates() {
     stage.addChild(text);
   }
   stage.update();
+}
+
+function createCircle(x, y, color) {
+  circles[x][y] = new createjs.Shape();
+  circles[x][y].graphics.beginFill(colors[color]).drawCircle(0, 0, 49);
+  circles[x][y].x = y*100 + 100;
+  circles[x][y].y = x*100 + 100;
+  stage.addChild(circles[x][y]);
 }
 
 function init() {
@@ -39,18 +47,14 @@ function init() {
         for (j = 0; j < width; j++) {
           if (gameState[i][j] == -1)
             continue;
-          circles[i][j] = new createjs.Shape();
-          circles[i][j].graphics.beginFill(colors[gameState[i][j]]).drawCircle(0, 0, 49);
-          circles[i][j].x = j*100 + 100;
-          circles[i][j].y = i*100 + 100;
-          stage.addChild(circles[i][j]);
-          stage.update();
+          createCircle(i, j, gameState[i][j]);
         }
+        stage.update();
       }
   });
 
-  socket.on('doMove', function(coords) {
-    swap(coords[0], coords[1]);
+  socket.on('doMove', function(move) {
+    createCircle(move.x, move.y, move.color);
     stage.update();
   });
 }
