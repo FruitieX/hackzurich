@@ -30,14 +30,19 @@ for (var i = 0; i < height; i++) {
     gameState.push([]);
 }
 
-var numPlayers = 6;
+var numPlayers = 3;
 
 for (var x = 0; x < width; x++) {
     for (var y = 0; y < height; y++) {
-        //gameState[y][x] = Math.floor(Math.random() * numPlayers);
-        gameState[y][x] = -1;
+        if (y < height - 2) {
+            gameState[y][x] = -1;
+        } else {
+            gameState[y][x] = Math.floor(Math.random() * numPlayers);
+        }
     }
 }
+console.log('there');
+console.log(gameState);
 
 var clearLineTimeoutVal = 5000;
 var clearLineTimeout = null;
