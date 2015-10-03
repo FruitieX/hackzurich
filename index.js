@@ -24,13 +24,15 @@ for (var i = 0; i < height; i++) {
     gameState.push([]);
 }
 
-var numPlayers = 4;
+var numPlayers = 3;
 
 for (var x = 0; x < width; x++) {
     for (var y = 0; y < height; y++) {
         gameState[y][x] = Math.floor(Math.random() * numPlayers);
     }
 }
+
+checkPlayField();
 
 var drawGameState = function() {
     console.log(gameState);
@@ -115,7 +117,7 @@ var doMove = function(from, direction) {
 io.on('connection', function(socket) {
     socket.emit('gameState', gameState);
 });
-
+/*
 var token = require(process.env.HOME + '/.diagram-bot-token.js');
 var Bot = require('node-telegram-bot');
 
@@ -135,3 +137,4 @@ var bot = new Bot({
 });
 
 bot.start();
+*/
