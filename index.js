@@ -211,15 +211,39 @@ try {
 
     bot.start();
 } catch(e) {
-    console.log('error initializing telegram bot API!');
+    console.log('ERROR initializing telegram bot API!');
     console.log(e);
-    console.log('did you forget to write your API key to ~/.diagram-bot-token.js?');
-    console.log('will use stdin for input instead (TODO)');
+    console.log('Did you forget to write your API key to ~/.diagram-bot-token.js?');
+    console.log('Will use stdin for input instead. Syntax:');
+    console.log('    3d - inserts element for player 3 in position D');
 
-    process.stdin.on('readable', function() {
-        var chunk = process.stdin.read();
-        if (chunk !== null) {
-            process.stdout.write('data: ' + chunk);
+    var readline = require('readline');
+    var rl = readline.createInterface({
+        input: process.stdin,
+        output: process.stdout,
+        terminal: false
+    });
+
+    rl.on('line', function(line){
+        var input = {
+            color: line.substr(0, 1),
+            pos: line.substr(1, 2).toLowerCase()
+        };
+
+        var color = _.findIndex(players, function(player) {
+            return player.id === 'dummy' + input.color;
+        });
+
+        if (!color) {
+            var player = {
+                name: 'Test player ' + input.color,
+                id: 'dummy' + input.color
+            }
+
+            // return new index
+            color = players.push(player) - 1;
         }
+
+        doMove(input.pos, color);
     });
 }
