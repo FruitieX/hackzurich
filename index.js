@@ -18,6 +18,8 @@ http.listen(8080, function() {
 var width = 10;
 var height = 6;
 
+var players = [];
+
 var gameState = [];
 
 for (var i = 0; i < height; i++) {
@@ -173,12 +175,47 @@ try {
     .on('message', function(msg) {
         if (msg.text) {
             msg.text = msg.text.toLowerCase();
-            console.log('got TG message: ' + msg.text);
-            var x = msg.text.charCodeAt(0) - 'a'.charCodeAt(0);
-            var y = msg.text.charCodeAt(1) - '0'.charCodeAt(0);
-            var dir = msg.text.substr(2, 3);
 
-            doMove({x: x, y: y}, dir);
+            if (msg.text.indexOf('/start')) {
+                var playerExists = _.find(players, function(player) {
+                    return player.id === msg.from.id;
+                });
+
+                if (!playerExists) {
+                    console.log(msg.from.first_name + ' joined the game with id: ' + msg.from.id);
+                    players.push({
+                        name: msg.from.first_name,
+                        id: msg.from.id
+                    });
+                }
+
+                bot.sendMessage({
+                    chat_id: msg.chat ? msg.chat.id : msg.from.id,
+                    reply_to_message_id: msg.message_id,
+                    reply_markup: {
+                        keyboard: [
+                            ['/a', '/b', '/c', '/d', '/e'],
+                            ['/f', '/g', '/h', '/i', '/j']
+                        ],
+                        resize_keyboard: true,
+                        selective: true
+                    }
+                }, function(err) {
+                    if (err) {
+                        console.log('error on sendMessage:');
+                        console.log(err);
+                    }
+                });
+            // drop piece commands
+            } else if (msg.text.substr(0, 1) === '/' &&
+                       msg.charCodeAt(1) >= 'a'.charCodeAt(0) &&
+                       msg.charCodeAt(1) <= 'z'.charCodeAt(0)) {
+
+                doMove(msg.text.substr(1, 2));
+            } else {
+                console.log('error: unknown command!');
+                console.log(msg.text);
+            }
         }
     });
 
