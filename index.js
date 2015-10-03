@@ -234,8 +234,6 @@ var doMove = function(pos, color) {
     }
 
     // TODO: uncomment when checkPlayField is implemented
-    checkPlayField();
-    drawGameState();
 
     var move = {
         x: pos,
@@ -243,6 +241,10 @@ var doMove = function(pos, color) {
         color: color
     };
     io.sockets.emit('doMove', move);
+
+    checkPlayField();
+    drawGameState();
+
     io.sockets.emit('scoreboard', players);
 };
 
