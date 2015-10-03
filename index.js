@@ -155,7 +155,7 @@ try {
                 return player.id === msg.from.id;
             });
 
-            if (msg.text.indexOf('/start')) {
+            if (!msg.text.indexOf('/start')) {
                 if (!color) {
                     color = initPlayer(msg);
                 }
@@ -178,10 +178,25 @@ try {
                         console.log(err);
                     }
                 });
-            // drop piece commands
+            } else if (!msg.text.indexOf('/stop')) {
+                bot.sendMessage({
+                    text: msg.from.first_name + ' left the game.',
+                    chat_id: msg.chat ? msg.chat.id : msg.from.id,
+                    reply_to_message_id: msg.message_id,
+                    reply_markup: {
+                        hide_keyboard: true,
+                        selective: true
+                    }
+                }, function(err) {
+                    if (err) {
+                        console.log('error on sendMessage:');
+                        console.log(err);
+                    }
+                });
             } else if (msg.text.substr(0, 1) === '/' &&
                        msg.text.charCodeAt(1) >= 'a'.charCodeAt(0) &&
                        msg.text.charCodeAt(1) <= 'z'.charCodeAt(0)) {
+                // commands for dropping pieces (/a, /b, /c, etc.)
                 if (!color) {
                     color = initPlayer(msg);
                 }
