@@ -86,84 +86,57 @@ var drawGameState = function() {
 };
 drawGameState();
 
-var doMove = function(from, direction) {
-    if (from.x < 0 || from.x > width - 1 ||
-        from.y < 0 || from.y > height - 1) {
+var doMove = function(pos, color) {
+    var posCharacter = pos;
+    pos = pos.charCodeAt(0) - pos.charCodeAt('a');
+
+    if (pos < 0 || pos > width - 1) {
         console.log('invalid move!');
         return;
     }
 
-    var temp = gameState[from.y][from.x];
-
-    switch (direction) {
-        case 'u':
-            if (from.y <= 0) {
-                console.log('invalid move!');
-                return;
-            }
-
-            gameState[from.y][from.x] = gameState[from.y - 1][from.x];
-            gameState[from.y - 1][from.x] = temp;
-
-            checkPlayField();
-
-            var to = {x: from.x, y: from.y - 1};
-            io.sockets.emit('doMove', [from, to]);
-            drawGameState();
-            break;
-        case 'd':
-            if (from.y >= height - 1) {
-                console.log('invalid move!');
-                return;
-            }
-
-            gameState[from.y][from.x] = gameState[from.y + 1][from.x];
-            gameState[from.y + 1][from.x] = temp;
-
-            checkPlayField();
-
-            var to = {x: from.x, y: from.y + 1};
-            io.sockets.emit('doMove', [from, to]);
-            drawGameState();
-            break;
-        case 'l':
-            if (from.x <= 0) {
-                console.log('invalid move!');
-                return;
-            }
-
-            gameState[from.y][from.x] = gameState[from.y][from.x - 1];
-            gameState[from.y][from.x - 1] = temp;
-
-            checkPlayField();
-
-            var to = {x: from.x - 1, y: from.y};
-            io.sockets.emit('doMove', [from, to]);
-            drawGameState();
-            break;
-        case 'r':
-            if (from.x >= width - 1) {
-                console.log('invalid move!');
-                return;
-            }
-
-            gameState[from.y][from.x] = gameState[from.y][from.x + 1];
-            gameState[from.y][from.x + 1] = temp;
-
-            checkPlayField();
-
-            var to = {x: from.x + 1, y: from.y};
-            io.sockets.emit('doMove', [from, to]);
-            drawGameState();
-            break;
-        default:
-            console.log('invalid move received! ' + direction);
+    if (gameState[0][pos] !== -1) {
+        console.log('invalid move! column ' + posCharacter + ' is full.');
+        return;
     }
+
+    // search first piece that either contains a piece or is beyond the array
+    // (undefined), put new piece on top of it
+    var y;
+    for (var i = 0; i < height; i++) {
+        if (gameState[i][pos] !== -1) {
+            y = i - 1;
+            gameState[i - 1][pos] = color;
+            break;
+        }
+    }
+
+    checkPlayField();
+    drawGameState();
+
+    var move = {
+        x: pos,
+        y: y,
+        color: color
+    };
+    io.sockets.emit('doMove', move);
 };
 
 io.on('connection', function(socket) {
     socket.emit('gameState', gameState);
 });
+
+var initPlayer = function(msg) {
+    console.log(msg.from.first_name + ' joined the game with id: ' + msg.from.id);
+
+    var player = {
+        name: msg.from.first_name,
+        id: msg.from.id
+    }
+
+    // return new index
+    return players.push(player) - 1;
+};
 
 try {
     var token = require(process.env.HOME + '/.diagram-bot-token.js');
@@ -176,17 +149,13 @@ try {
         if (msg.text) {
             msg.text = msg.text.toLowerCase();
 
-            if (msg.text.indexOf('/start')) {
-                var playerExists = _.find(players, function(player) {
-                    return player.id === msg.from.id;
-                });
+            var color = _.findIndex(players, function(player) {
+                return player.id === msg.from.id;
+            });
 
-                if (!playerExists) {
-                    console.log(msg.from.first_name + ' joined the game with id: ' + msg.from.id);
-                    players.push({
-                        name: msg.from.first_name,
-                        id: msg.from.id
-                    });
+            if (msg.text.indexOf('/start')) {
+                if (!color) {
+                    color = initPlayer(msg);
                 }
 
                 bot.sendMessage({
@@ -210,8 +179,11 @@ try {
             } else if (msg.text.substr(0, 1) === '/' &&
                        msg.charCodeAt(1) >= 'a'.charCodeAt(0) &&
                        msg.charCodeAt(1) <= 'z'.charCodeAt(0)) {
+                if (!color) {
+                    color = initPlayer(msg);
+                }
 
-                doMove(msg.text.substr(1, 2));
+                doMove(msg.text.substr(1, 2), color);
             } else {
                 console.log('error: unknown command!');
                 console.log(msg.text);
