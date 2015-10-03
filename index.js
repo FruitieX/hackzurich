@@ -135,7 +135,7 @@ var checkPlayField = function() {
                 }
                 j++;
             }
-            console.log(lengths);
+            //console.log(lengths);
             // Check if there are any connected lines with length above threshold
             for (var index = 0; index < lengths.length; index++){
                 if(lengths[index] >= removedLength){
@@ -181,7 +181,7 @@ var checkPlayField = function() {
 checkPlayField();
 
 var drawGameState = function() {
-   // console.log(gameState);
+    console.log(gameState);
     /*
     for (var y = 0; y < height; y++) {
         for (var x = 0; x < width; x++) {
