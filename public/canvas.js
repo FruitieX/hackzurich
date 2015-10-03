@@ -101,6 +101,13 @@ function init() {
     stage.canvas.width = window.innerWidth;
     stage.canvas.height = window.innerHeight;
 
+    for (var i = 0; i < height; i++) {
+      for (var j = 0; j < width; j++) {
+        if (gameState[i][j].color !==  -1) {
+          createCircle(j, i, gameState[i][j].color);
+        }
+      }
+    }
     render();
   }
   resize();
