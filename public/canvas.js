@@ -30,6 +30,7 @@ function init() {
   var socket = io();
 
   socket.on('gameState', function(gs) {
+      stage.removeAllChildren();
 
       gameState = gs;
       circles = [];
