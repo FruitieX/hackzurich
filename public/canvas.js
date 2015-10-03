@@ -11,7 +11,7 @@ var width;
 
 var scale;
 
-var colors = ["#0099CC", "#444444", "#00DB4A", "#BB1D00", "#FF8300"];
+var colors = ["#0099CC", "#444444", "#00DB4A", "#BB1D00", "#FF8300", "#FF0000"];
 var stage;
 var gameState;
 var scoreboard = [];
@@ -35,14 +35,14 @@ function drawScoreboard() {
 
         // player name
         text = new createjs.Text(player.name + ':',
-                scale / 32 + "px Helvetica", colors[i]);
+                scale / 32 + "px Helvetica", colors[player.color]);
         text.x = scale * 10 / 15 + xoffs;
         text.y = scale/32 + (2 * i + 1) * scale / 32 + yoffs;
         stage.addChild(text);
 
         // score
         text = new createjs.Text(player.score,
-                scale / 32 + "px Helvetica", colors[i]);
+                scale / 32 + "px Helvetica", colors[player.color]);
         text.x = scale * 10 / 15 + xoffs;
         text.y = scale/32 + (2 * i + 2) * scale / 32 + yoffs;
         stage.addChild(text);
@@ -156,14 +156,34 @@ function init() {
 
   socket.on('scoreboard', function(newScoreboard) {
     scoreboard = newScoreboard;
+    console.log(newScoreboard);
     scoreboard = _.sortBy(scoreboard, 'score');
     render();
   });
 
   socket.on('clearCircles', function(circles) {
+      console.log('clearCircles');
       _.each(circles, function(circle) {
           gameState[circle.y][circle.x] = -1;
       });
+
+      // loop over every blob
+      for (var y = height - 1; y >= 0; y--) {
+        for (var x = 0; x < width; x++) {
+          // if blob is empty
+          if (gameState[y][x] === -1) {
+            // drop every blob above it one step down
+            for (var j = y - 1; j >= 0; j--) {
+              gameState[j + 1][x] = gameState[j][x];
+
+              if (gameState[j][x].color !== -1) {
+                  gameState[j + 1][x].circle.y += scale / 16;
+              }
+            }
+          }
+        }
+      }
+
       render();
   });
 }

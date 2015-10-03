@@ -204,7 +204,8 @@ var checkPlayField = function() {
         // call recursively until there is nothing more to delete
         checkPlayField();
 
-        io.sockets.emit('clearCircles', shouldBeDeleted);
+        //io.sockets.emit('clearCircles', shouldBeDeleted);
+        io.sockets.emit('gameState', gameState);
         io.sockets.emit('scoreboard', players);
     }
 };
@@ -286,6 +287,7 @@ var initPlayer = function(msg) {
     var player = {
         name: msg.from.first_name,
         id: msg.from.id,
+        color: players.length,
         lastCmd: 0,
         score: 0
     }
@@ -402,6 +404,7 @@ rl.on('line', function(line){
         var player = {
             name: 'Test player ' + input.color,
             score: 0,
+            color: players.length,
             lastCmd: 0,
             id: 'dummy' + input.color
         }
