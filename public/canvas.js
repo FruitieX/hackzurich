@@ -1,3 +1,9 @@
+var xoffs;
+var yoffs;
+
+var heightPx;
+var widthPx;
+
 var height;
 var width;
 
@@ -8,9 +14,9 @@ var gameState;
 
 function drawCoordinates() {
   for (i = 0; i < width; i++) {
-    var text = new createjs.Text(String.fromCharCode(65 + i), "40px Helvetica", "#000000");
-    text.x = 87 + 100 * i;
-    text.y = 0;
+    var text = new createjs.Text(String.fromCharCode(65 + i), scale / 24 + "px Helvetica", "#000000");
+    text.x = scale / 15 + (scale / 12) * i + xoffs;
+    text.y = 0 + yoffs;
     stage.addChild(text);
   }
   stage.update();
@@ -18,9 +24,9 @@ function drawCoordinates() {
 
 function createCircle(x, y, color) {
   circles[y][x] = new createjs.Shape();
-  circles[y][x].graphics.beginFill(colors[color]).drawCircle(0, 0, 49);
-  circles[y][x].x = x*100 + 100;
-  circles[y][x].y = y*100 + 100;
+  circles[y][x].graphics.beginFill(colors[color]).drawCircle(0, 0, scale / 24);
+  circles[y][x].x = x*(scale / 12) + (scale / 12) + xoffs;
+  circles[y][x].y = y*(scale / 12) + (scale / 12) + yoffs;
   stage.addChild(circles[y][x]);
 }
 
@@ -40,6 +46,35 @@ function drawCircles() {
 
 function init() {
   stage = new createjs.Stage("diaCanvas");
+
+  function resize() {
+    var wishAspect = 16/9;
+    var curAspect = window.innerWidth / window.innerHeight;
+
+    if (wishAspect > curAspect) {
+        widthPx = window.innerWidth;
+        heightPx = window.innerWidth / wishAspect;
+        scale = heightPx * wishAspect;
+        xoffs = 0;
+        yoffs = (window.innerHeight - heightPx) / 2;
+    } else {
+        widthPx = window.innerHeight * wishAspect;
+        heightPx = window.innerHeight;
+        scale = widthPx;
+        xoffs = (window.innerWidth - widthPx) / 2;
+        yoffs = 0;
+    }
+
+    stage.canvas.width = window.innerWidth;
+    stage.canvas.height = window.innerHeight;
+
+    stage.removeAllChildren();
+    drawCoordinates();
+    drawCircles();
+    stage.update();
+  }
+  resize();
+  window.addEventListener('resize', resize, false);
 
   var socket = io();
 
