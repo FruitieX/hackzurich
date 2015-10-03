@@ -24,7 +24,7 @@ for (var i = 0; i < height; i++) {
     gameState.push([]);
 }
 
-var numPlayers = 4;
+var numPlayers = 5;
 
 for (var x = 0; x < width; x++) {
     for (var y = 0; y < height; y++) {
