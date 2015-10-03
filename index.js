@@ -87,8 +87,8 @@ var drawGameState = function() {
 drawGameState();
 
 var doMove = function(pos, color) {
-    var posCharacter = pos;
     pos = pos.toLowerCase();
+    var posCharacter = pos.substr(0, 1);
     pos = pos.charCodeAt(0) - 'a'.charCodeAt(0);
 
     if (pos < 0 || pos > width - 1) {
