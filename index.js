@@ -75,8 +75,9 @@ var checkPlayField = function() {
     if (percentage > 0.70) {
         clearLine();
         checkPlayField();
+        return;
     }
-    /*
+
     var shouldBeDeleted = [];
     var removedLength = 3;
     var deltas = [[1, 0], [1, 1], [0, 1], [-1, 1]];
@@ -87,76 +88,75 @@ var checkPlayField = function() {
             if (gameState[y][x] === -1) {
                 continue;
             }
-	    // check the adjacencies to right
-	    var lengths = [0, 0, 0, 0];
-	    for(var i = x; i < width; i++){
-	   	if (gameState[y][x] === gameState[y][i]){
-		    lengths[0] += 1;
-		} 
-		else {
-		   break;
-		}
-	    }
-	    // check the direction to botright
-	    var j = y;
- 	    for(var i = x; i < width; i++){
-		if (j >= height){
-		   break;
-		}
-	   	if (gameState[y][x] === gameState[j][i]){
-		    lengths[1] += 1;
-		}
-		else {
-		    break;
-		}
-		j++;
-	    }
-	    // check the direction to bot
- 	    for(var j = y; j < height; j++){
-	   	if (gameState[y][x] === gameState[j][x]){
-		    lengths[2] += 1;
-		} 
-		else {
-		   break;
-		}
+            // check the adjacencies to right
+            var lengths = [0, 0, 0, 0];
+            for(var i = x; i < width; i++){
+                if (gameState[y][x] === gameState[y][i]){
+                    lengths[0] += 1;
+                }
+                else {
+                    break;
+                }
             }
-	    // check the direction to botleft
-	    var j = y;
-	    for(var i = x; i >= 0; i--){
-		if (j >= height){
-		    break;
-		}    
-		if (gameState[y][x] === gameState[j][i]){
-		    lengths[3] += 1;
-		}
-		else {
-		    break;
-		}
-		j++;
+            // check the direction to botright
+            var j = y;
+            for(var i = x; i < width; i++){
+                if (j >= height){
+                    break;
+                }
+                if (gameState[y][x] === gameState[j][i]){
+                    lengths[1] += 1;
+                }
+                else {
+                    break;
+                }
+                j++;
             }
-	    console.log(lengths);
-	    // Check if there are any connected lines with length above threshold
-	    for (var index = 0; index < lengths.length; index++){
-	      	if(lengths[index] >= removedLength){
-		    for(var n = 0; n < lengths[index]; n++){
-			var temp = {x: x + deltas[index][0] * n, y: y + deltas[index][1] * n};
-			if (shouldBeDeleted.length === 0){
-			   shouldBeDeleted.push(temp);
-			   continue;
-			}			
-			for(var m = 0; m < shouldBeDeleted.length; m++){
-			   if(shouldBeDeleted[m].x === temp.x && shouldBeDeleted[m].y === temp.y){
-			      break;	
-			   }
-			   else if(m === (shouldBeDeleted.length - 1)) {
-		    	       shouldBeDeleted.push(temp); 
-			   }
-			}
-		    }
-		}
-	    } 
-	    
-   	}
+            // check the direction to bot
+            for(var j = y; j < height; j++){
+                if (gameState[y][x] === gameState[j][x]){
+                    lengths[2] += 1;
+                }
+                else {
+                    break;
+                }
+            }
+            // check the direction to botleft
+            var j = y;
+            for(var i = x; i >= 0; i--){
+                if (j >= height){
+                    break;
+                }
+                if (gameState[y][x] === gameState[j][i]){
+                    lengths[3] += 1;
+                }
+                else {
+                    break;
+                }
+                j++;
+            }
+            console.log(lengths);
+            // Check if there are any connected lines with length above threshold
+            for (var index = 0; index < lengths.length; index++){
+                if(lengths[index] >= removedLength){
+                    for(var n = 0; n < lengths[index]; n++){
+                        var temp = {x: x + deltas[index][0] * n, y: y + deltas[index][1] * n};
+                        if (shouldBeDeleted.length === 0){
+                            shouldBeDeleted.push(temp);
+                            continue;
+                        }
+                        for(var m = 0; m < shouldBeDeleted.length; m++){
+                            if(shouldBeDeleted[m].x === temp.x && shouldBeDeleted[m].y === temp.y){
+                                break;
+                            }
+                            else if(m === (shouldBeDeleted.length - 1)) {
+                                shouldBeDeleted.push(temp);
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
     // Actually delete the marks
     if (shouldBeDeleted.length) {
@@ -175,7 +175,6 @@ var checkPlayField = function() {
         // call recursively until there is nothing more to delete
         checkPlayField();
     }
-    */
 };
 
 // check playfield once before starting game
