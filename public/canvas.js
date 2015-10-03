@@ -99,8 +99,9 @@ function init() {
   });
 
   socket.on('doMove', function(move) {
+    gameState[move.y][move.x] = move.color;
     createCircle(move.x, move.y, move.color);
-    circles[move.y][move.x].distance = move.y * (scale / 12) + (scale / 12);
+    circles[move.y][move.x].distance = move.y * (scale / 12) + (scale / 12) + yoffs;
     circles[move.y][move.x].y = 0;
     stage.update();
   });
