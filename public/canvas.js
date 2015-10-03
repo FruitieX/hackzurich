@@ -15,7 +15,7 @@ var gameState;
 var scoreboard = [];
 
 function drawScoreboard() {
-    var text = new createjs.Text('Scoreboard', scale / 32 + "px Helvetica", "#000000");
+    var text = new createjs.Text('Scoreboard:', scale / 32 + "px Helvetica", "#000000");
     text.x = scale * 10 / 15 + xoffs;
     text.y = 0 + yoffs;
     stage.addChild(text);
