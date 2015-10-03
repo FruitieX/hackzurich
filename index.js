@@ -174,6 +174,8 @@ var checkPlayField = function() {
 
         // call recursively until there is nothing more to delete
         checkPlayField();
+
+        io.sockets.emit('clearCircles', shouldBeDeleted);
     }
 };
 

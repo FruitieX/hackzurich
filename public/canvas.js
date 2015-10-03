@@ -152,6 +152,15 @@ function init() {
       drawCircles();
       stage.update();
   });
+
+  socket.on('clearCircles', function(circles) {
+      // TODO:
+      /*
+      _.each(circles, function(circle) {
+          gameState[circle.y][circle.x] = -1;
+      });
+      */
+  });
 }
 
 function tick(event) {
