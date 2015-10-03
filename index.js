@@ -105,14 +105,24 @@ var doMove = function(pos, color) {
     // beyond the array (undefined), put new piece on top of it
     var y;
     for (var i = 0; i < height; i++) {
+        // first element found
         if (gameState[i][pos] !== -1) {
+            // put piece above it
             y = i - 1;
             gameState[i - 1][pos] = color;
             break;
         }
+        // got to last row and still no elements found
+        if (gameState[i][pos] === -1 && i === height - 1) {
+            // put piece on last row
+            y = i;
+            gameState[i][pos] = color;
+            break;
+        }
     }
 
-    checkPlayField();
+    // TODO: uncomment when checkPlayField is implemented
+    //checkPlayField();
     drawGameState();
 
     var move = {
@@ -218,37 +228,37 @@ try {
     console.log('Did you forget to write your API key to ~/.diagram-bot-token.js?');
     console.log('Will use stdin for input instead. Syntax:');
     console.log('    3d - inserts element for player 3 in position D');
+}
 
-    var readline = require('readline');
-    var rl = readline.createInterface({
-        input: process.stdin,
-        output: process.stdout,
-        terminal: false
+var readline = require('readline');
+var rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout,
+    terminal: false
+});
+
+rl.on('line', function(line){
+    var input = {
+        color: line.substr(0, 1),
+        pos: line.substr(1, 2).toLowerCase()
+    };
+
+    var color = _.findIndex(players, function(player) {
+        return player.id === 'dummy' + input.color;
     });
 
-    rl.on('line', function(line){
-        var input = {
-            color: line.substr(0, 1),
-            pos: line.substr(1, 2).toLowerCase()
-        };
-
-        var color = _.findIndex(players, function(player) {
-            return player.id === 'dummy' + input.color;
-        });
-
-        if (color === -1) {
-            var player = {
-                name: 'Test player ' + input.color,
-                id: 'dummy' + input.color
-            }
-
-            console.log('adding new player: ' + player.id);
-            console.log(player);
-
-            // return new index
-            color = players.push(player) - 1;
+    if (color === -1) {
+        var player = {
+            name: 'Test player ' + input.color,
+            id: 'dummy' + input.color
         }
 
-        doMove(input.pos, color);
-    });
-}
+        console.log('adding new player: ' + player.id);
+        console.log(player);
+
+        // return new index
+        color = players.push(player) - 1;
+    }
+
+    doMove(input.pos, color);
+});
