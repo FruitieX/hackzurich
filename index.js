@@ -169,16 +169,18 @@ var checkPlayField = function() {
             for (var j = y - 1; j >= 0; j--) {
                 gameState[j + 1][x] = gameState[j][x];
             }
-	    players[shouldBeDeleted[i].player].score++;
+
+            if (players[shouldBeDeleted[i].player]) {
+                players[shouldBeDeleted[i].player].score++;
+            }
             gameState[0][x] = -1;
-	    
         }
 
         // call recursively until there is nothing more to delete
         checkPlayField();
 
         io.sockets.emit('clearCircles', shouldBeDeleted);
-	io.sockets.emit('scoreboard', players);
+        io.sockets.emit('scoreboard', players);
     }
 };
 

@@ -147,6 +147,7 @@ function init() {
   socket.on('scoreboard', function(newScoreboard) {
       scoreboard = newScoreboard;
       scoreboard = _.sortBy(scoreboard, 'score');
+      stage.removeAllChildren();
       drawScoreboard();
       drawCoordinates();
       drawCircles();
