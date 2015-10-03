@@ -70,9 +70,9 @@ function drawCircles() {
 
 function createCircle(x, y, color) {
   var circle = new createjs.Shape();
-  circle.graphics.beginFill(colors[color]).drawCircle(0, 0, scale / 24);
-  circle.x = x*(scale / 12) + (scale / 12) + xoffs;
-  circle.y = y*(scale / 12) + (scale / 12) + yoffs;
+  circle.graphics.beginFill(colors[color]).drawCircle(0, 0, scale / 32);
+  circle.x = x*(scale / 16) + (scale / 16) + xoffs;
+  circle.y = y*(scale / 16) + (scale / 16) + yoffs;
   gameState[y][x].color = color;
   gameState[y][x].circle = circle;
 }
