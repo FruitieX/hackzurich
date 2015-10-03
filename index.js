@@ -28,7 +28,7 @@ for (var i = 0; i < height; i++) {
     gameState.push([]);
 }
 
-var numPlayers = 5;
+var numPlayers = 6;
 
 for (var x = 0; x < width; x++) {
     for (var y = 0; y < height; y++) {
@@ -40,6 +40,27 @@ var clearLineTimeoutVal = 5000;
 var clearLineTimeout = null;
 
 var clearLine = function() {
+    var percentage = 0;
+    var active = 0;
+    var inactive = 0;
+
+    for (var x = 0; x < width; x++) {
+        for (var y = 0; y < height; y++) {
+            if (gameState[y][x] !== -1) {
+                active++;
+            } else {
+                inactive++;
+            }
+        }
+    }
+
+    percentage = active / (active + inactive);
+
+    if (percentage < 1/3) {
+        console.log('skipping line clear due to low percentage!');
+        return;
+    }
+
     gameState.unshift(Array.apply(null, Array(width)).map(Number.prototype.valueOf, -1));
     gameState.pop();
     console.log('line cleared!');
