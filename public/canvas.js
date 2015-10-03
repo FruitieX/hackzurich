@@ -25,6 +25,20 @@ function createCircle(x, y, color) {
   stage.addChild(circles[y][x]);
 }
 
+function drawCircles() {
+  for (i = 0; i < height; i++) {
+    circles.push([]);
+  }
+
+  for (i = 0; i < height; i++) {
+    for (j = 0; j < width; j++) {
+      if (gameState[i][j] == -1)
+        continue;
+      createCircle(j, i, gameState[i][j]);
+    }
+  }
+}
+
 function init() {
   stage = new createjs.Stage("diaCanvas");
 
@@ -41,22 +55,12 @@ function init() {
 
       drawCoordinates();
 
-      for (i = 0; i < height; i++) {
-        circles.push([]);
-      }
-
-      for (i = 0; i < height; i++) {
-        for (j = 0; j < width; j++) {
-          if (gameState[i][j] == -1) {
-            circles[i][j] == undefined;
-            continue;
-          }
-          createCircle(j, i, gameState[i][j]);
-        }
-        stage.update();
-      }
       createjs.Ticker.on("tick", tick);
       createjs.Ticker.setFPS(60);
+ 
+      drawCircles();
+
+      stage.update();
   });
 
   socket.on('doMove', function(move) {
@@ -64,6 +68,15 @@ function init() {
     circles[move.y][move.x].distance = move.y * 100 + 100;
     circles[move.y][move.x].y = 0;
     stage.update();
+  });
+
+  socket.on('clearLine', function() {
+      gameState.unshift(Array.apply(null, Array(width)).map(Number.prototype.valueOf, -1));
+      gameState.pop();
+      stage.removeAllChildren();
+      drawCoordinates();
+      drawCircles();
+      stage.update();
   });
 }
 
