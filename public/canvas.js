@@ -17,6 +17,7 @@ var gameState;
 var scoreboard = [];
 
 function render() {
+  calculateNaturalPos();
   stage.removeAllChildren();
   drawCoordinates();
   drawScoreboard();
@@ -74,12 +75,36 @@ function drawCircles() {
 }
 
 function createCircle(x, y, color) {
+  console.log("created!");
   var circle = new createjs.Shape();
   circle.graphics.beginFill(colors[color]).drawCircle(0, 0, scale / 32);
   circle.x = x*(scale / 16) + (scale / 16) + xoffs;
-  circle.y = y*(scale / 16) + (scale / 16) + yoffs + scale / 64;
+  circle.y = 0;
   gameState[y][x].color = color;
   gameState[y][x].circle = circle;
+}
+
+function calculateNaturalPos() {
+  for (var i = 0; i < height; i++) {
+    for (var j = 0; j < width; j++) {
+        gameState[i][j].naturalPos = {};
+        gameState[i][j].naturalPos.x = j*(scale / 16) + (scale / 16) + xoffs;
+        gameState[i][j].naturalPos.y = i*(scale / 16) + (scale / 16) + yoffs + scale / 64;
+    }
+  }
+}
+
+function tick(event) {
+  for (var i = 0; i < height; i++) {
+    for (var j = 0; j < width; j++) {
+      if (gameState[i][j].color !== -1) {
+        if (gameState[i][j].circle.y < gameState[i][j].naturalPos.y) {
+          gameState[i][j].circle.y += (scale / 64);
+        }
+      }
+    }
+  }
+  render();
 }
 
 function init() {
@@ -126,6 +151,7 @@ function init() {
       height = gs.length;
       width = gs[0].length;
 
+      console.log(gs);
       for (var i = 0; i < height; i++) {
         gameState.push([]);
         for (var j = 0; j < width; j++) {
@@ -169,26 +195,24 @@ function init() {
   socket.on('clearCircles', function(circles) {
       console.log('clearCircles');
       _.each(circles, function(circle) {
-          gameState[circle.y][circle.x] = -1;
+          gameState[circle.y][circle.x].color = -1;
       });
 
       // loop over every blob
-      for (var y = height - 1; y >= 0; y--) {
+      for (var y = height - 1; y >= 1; y--) {
         for (var x = 0; x < width; x++) {
           // if blob is empty
-          if (gameState[y][x] === -1) {
+          if (gameState[y][x].color === -1) {
             // drop every blob above it one step down
             for (var j = y - 1; j >= 0; j--) {
               gameState[j + 1][x] = gameState[j][x];
-
-              if (gameState[j][x].color !== -1) {
-                  gameState[j + 1][x].circle.y += scale / 16;
-              }
             }
+            calculateNaturalPos();
           }
         }
       }
-
       render();
   });
+  createjs.Ticker.addEventListener("tick", tick);
+  createjs.Ticker.setFPS(60);
 }
